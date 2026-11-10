@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import { HttpError } from "./httpError";
+import { faultsRouter } from "./routes/faults";
 import { reportsRouter } from "./routes/reports";
 
 export function createApp() {
@@ -10,6 +11,10 @@ export function createApp() {
   app.get("/health", (_req, res) => {
     res.status(200).json({ ok: true });
   });
+
+  if (process.env.NODE_ENV !== "production") {
+    app.use(faultsRouter);
+  }
 
   app.use(reportsRouter);
 

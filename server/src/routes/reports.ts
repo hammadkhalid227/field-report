@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
+import { applyFault } from "../faults";
 import { HttpError } from "../httpError";
 import { maxPhotoBytes, photoTooLargeMessage } from "../storage/cloudinaryImages";
 import {
@@ -84,6 +85,7 @@ export const reportsRouter = Router();
 
 reportsRouter.post(
   "/reports/:clientId/images",
+  applyFault,
   (req, res, next) => {
     upload.single("file")(req, res, (error) => {
       if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
@@ -125,7 +127,7 @@ reportsRouter.post(
   },
 );
 
-reportsRouter.post("/reports/:clientId/complete", async (req, res, next) => {
+reportsRouter.post("/reports/:clientId/complete", applyFault, async (req, res, next) => {
   try {
     const { clientId } = parse(clientParams, req.params);
     const body = parse(completeBody, req.body);
