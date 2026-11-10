@@ -51,6 +51,10 @@ export function createPhoneFileSystem(): FileSystem {
       if (await fs.exists(to)) {
         await fs.unlink(to);
       }
+      if (from.includes('://')) {
+        await fs.writeFile(to, from, 'uri');
+        return;
+      }
       await fs.cp(from, to);
     },
     async remove(path) {

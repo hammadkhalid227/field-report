@@ -114,10 +114,10 @@ export class FileReportStore implements ReportStore {
 
     const createdAt = Date.now();
     const photos: StoredPhoto[] = [];
-
     for (let position = 0; position < input.photos.length; position += 1) {
       const photo = input.photos[position];
       const photoId = photo.id ?? createId();
+   
       const localPath = joinPath(this.root, 'reports', id, `${photoId}.jpg`);
       await this.files.copy(photo.sourcePath, localPath);
       photos.push({

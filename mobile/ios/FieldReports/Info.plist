@@ -34,6 +34,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Field Reports uses the camera to attach a photo to a report.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Field Reports uses your photos to attach a picture to a report.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>
