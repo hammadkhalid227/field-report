@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: field
+      POSTGRES_PASSWORD: field
+      POSTGRES_DB: field_reports
+    ports:
+      - "5432:5432"
+    volumes:
+      - field_reports_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U field -d field_reports"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  field_reports_pg:
