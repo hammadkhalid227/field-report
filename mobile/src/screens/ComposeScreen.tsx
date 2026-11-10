@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '../navigation/types';
 import { reportStore } from '../store/reportStore';
 import { canSave, maxPhotos } from '../compose/canSave';
+import { compressPhoto, PhotoTooLargeError } from '../compose/compressPhoto';
 import {
   cameraAccess,
   galleryAccess,
@@ -29,8 +30,14 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'Compose'>;
 
 type DraftPhoto = {
+  id: string;
+  status: 'preparing' | 'ready';
   uri: string;
 };
+
+function draftId() {
+  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+}
 
 function photoUris(response: ImagePickerResponse) {
   const uris: string[] = [];
@@ -59,11 +66,40 @@ export function ComposeScreen({ navigation }: Props) {
     return () => subscription.remove();
   }, []);
 
+  async function prepare(id: string, uri: string) {
+    try {
+      const compressed = await compressPhoto(uri);
+      setPhotos(current =>
+        current.map(photo =>
+          photo.id === id
+            ? { ...photo, uri: compressed, status: 'ready' }
+            : photo,
+        ),
+      );
+    } catch (error) {
+      setPhotos(current => current.filter(photo => photo.id !== id));
+      setNotice(
+        error instanceof PhotoTooLargeError
+          ? error.message
+          : 'Could not prepare that photo.',
+      );
+    }
+  }
+
   function addPhotos(uris: string[]) {
+    const drafts: DraftPhoto[] = [];
     setPhotos(current => {
       const room = maxPhotos - current.length;
-      const next = uris.slice(0, room).map(uri => ({ uri }));
+      const next = uris.slice(0, room).map(uri => ({
+        id: draftId(),
+        status: 'preparing' as const,
+        uri,
+      }));
+      drafts.push(...next);
       return [...current, ...next];
+    });
+    drafts.forEach(photo => {
+      prepare(photo.id, photo.uri);
     });
   }
 
@@ -148,7 +184,9 @@ export function ComposeScreen({ navigation }: Props) {
     try {
       await reportStore.save({
         description,
-        photos: photos.map(photo => ({ sourcePath: photo.uri })),
+        photos: photos
+          .filter(photo => photo.status === 'ready')
+          .map(photo => ({ sourcePath: photo.uri })),
       });
       navigation.goBack();
     } catch (error) {
@@ -161,7 +199,8 @@ export function ComposeScreen({ navigation }: Props) {
   }
 
   const roomLeft = photos.length < maxPhotos;
-  const ready = canSave(description, photos.length) && !saving;
+  const photosReady = photos.every(photo => photo.status === 'ready');
+  const ready = canSave(description, photos.length) && photosReady && !saving;
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
@@ -193,8 +232,15 @@ export function ComposeScreen({ navigation }: Props) {
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {photos.map((photo, index) => (
-              <View key={`${photo.uri}-${index}`} style={styles.photoCard}>
-                <Image source={{ uri: photo.uri }} style={styles.photo} />
+              <View key={photo.id} style={styles.photoCard}>
+                {photo.status === 'ready' ? (
+                  <Image source={{ uri: photo.uri }} style={styles.photo} />
+                ) : (
+                  <View style={styles.preparing}>
+                    <ActivityIndicator color="#1C1915" />
+                    <Text style={styles.preparingText}>Preparing…</Text>
+                  </View>
+                )}
                 <Pressable
                   onPress={() => removePhoto(index)}
                   style={styles.removeButton}
@@ -284,6 +330,19 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 10,
     backgroundColor: '#E6E1D8',
+  },
+  preparing: {
+    width: 96,
+    height: 96,
+    borderRadius: 10,
+    backgroundColor: '#E6E1D8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  preparingText: {
+    fontSize: 12,
+    color: '#5C564E',
   },
   removeButton: {
     minHeight: 44,
