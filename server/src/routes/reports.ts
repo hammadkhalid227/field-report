@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { HttpError } from "../httpError";
+import { maxPhotoBytes, photoTooLargeMessage } from "../storage/cloudinaryImages";
 import {
   completeReport,
   getReport,
@@ -11,7 +12,7 @@ import {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 25 * 1024 * 1024 },
+  limits: { fileSize: maxPhotoBytes },
 });
 
 const clientParams = z.object({
@@ -86,7 +87,7 @@ reportsRouter.post(
   (req, res, next) => {
     upload.single("file")(req, res, (error) => {
       if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
-        next(new HttpError(413, "Photo is too large"));
+        next(new HttpError(413, photoTooLargeMessage));
         return;
       }
 

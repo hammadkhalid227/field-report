@@ -1,42 +1,67 @@
 import assert from "node:assert/strict";
-import fs from "fs/promises";
 import { randomUUID } from "crypto";
 import { after, beforeEach, describe, it } from "node:test";
 import request from "supertest";
 import { createApp } from "../src/app";
 import { getPrisma } from "../src/lib/prisma";
-import { uploadsDir } from "../src/storage/localImages";
+import {
+  maxPhotoBytes,
+  photoStorage,
+  photoTooLargeMessage,
+} from "../src/storage/cloudinaryImages";
 
 const app = createApp();
 const prisma = getPrisma();
+const storedPhotoIds: string[] = [];
 
 function photo(contents: string) {
   return Buffer.from(contents);
 }
 
-async function uploadPhoto(
+async function uploadPhotoBuffer(
+  reportClientId: string,
+  imageClientId: string,
+  position: number,
+  buffer: Buffer,
+  mimeType = "image/jpeg",
+) {
+  return request(app)
+    .post(`/reports/${reportClientId}/images`)
+    .field("imageClientId", imageClientId)
+    .field("position", String(position))
+    .attach("file", buffer, {
+      filename: "photo.jpg",
+      contentType: mimeType,
+    });
+}
+
+function uploadPhoto(
   reportClientId: string,
   imageClientId: string,
   position: number,
   contents = "photo",
   mimeType = "image/jpeg",
 ) {
-  const response = await request(app)
-    .post(`/reports/${reportClientId}/images`)
-    .field("imageClientId", imageClientId)
-    .field("position", String(position))
-    .attach("file", photo(contents), {
-      filename: "photo.jpg",
-      contentType: mimeType,
-    });
-
-  return response;
+  return uploadPhotoBuffer(
+    reportClientId,
+    imageClientId,
+    position,
+    photo(contents),
+    mimeType,
+  );
 }
 
 beforeEach(async () => {
+  storedPhotoIds.length = 0;
+  photoStorage.save = async (imageClientId) => {
+    storedPhotoIds.push(imageClientId);
+    return {
+      url: `https://res.cloudinary.com/demo/image/upload/field-reports/${imageClientId}.jpg`,
+      publicId: `field-reports/${imageClientId}`,
+    };
+  };
   await prisma.image.deleteMany();
   await prisma.report.deleteMany();
-  await fs.rm(uploadsDir, { recursive: true, force: true });
 });
 
 after(async () => {
@@ -55,8 +80,48 @@ describe("photos", () => {
     assert.equal(second.status, 200);
     assert.equal(second.body.id, first.body.id);
     assert.equal(second.body.bytes, first.body.bytes);
+    assert.equal(second.body.url, first.body.url);
+    assert.deepEqual(storedPhotoIds, [imageClientId]);
     assert.equal(await prisma.image.count(), 1);
     assert.equal(await prisma.report.count(), 1);
+
+    const row = await prisma.image.findUniqueOrThrow({
+      where: { clientId: imageClientId },
+    });
+    assert.equal(row.publicId, `field-reports/${imageClientId}`);
+    assert.equal(
+      row.url,
+      `https://res.cloudinary.com/demo/image/upload/field-reports/${imageClientId}.jpg`,
+    );
+  });
+
+  it("rejects a photo over 5 MB before storing it", async () => {
+    const response = await request(app)
+      .post(`/reports/${randomUUID()}/images`)
+      .field("imageClientId", randomUUID())
+      .field("position", "0")
+      .attach("file", Buffer.alloc(maxPhotoBytes + 1), {
+        filename: "big.jpg",
+        contentType: "image/jpeg",
+      });
+
+    assert.equal(response.status, 413);
+    assert.equal(response.body.error, photoTooLargeMessage);
+    assert.equal(storedPhotoIds.length, 0);
+    assert.equal(await prisma.image.count(), 0);
+  });
+
+  it("accepts a photo of exactly 5 MB", async () => {
+    const response = await uploadPhotoBuffer(
+      randomUUID(),
+      randomUUID(),
+      0,
+      Buffer.alloc(maxPhotoBytes),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.bytes, maxPhotoBytes);
+    assert.equal(storedPhotoIds.length, 1);
   });
 
   it("rejects a sixth photo", async () => {

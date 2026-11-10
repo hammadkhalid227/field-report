@@ -1,13 +1,11 @@
 import express, { NextFunction, Request, Response } from "express";
 import { HttpError } from "./httpError";
 import { reportsRouter } from "./routes/reports";
-import { uploadsDir } from "./storage/localImages";
 
 export function createApp() {
   const app = express();
 
   app.use(express.json());
-  app.use("/uploads", express.static(uploadsDir));
 
   app.get("/health", (_req, res) => {
     res.status(200).json({ ok: true });

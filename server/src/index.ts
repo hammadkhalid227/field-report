@@ -1,5 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { createApp } from "./app";
+
+config({ quiet: true });
 
 const port = Number(process.env.PORT ?? 4000);
 

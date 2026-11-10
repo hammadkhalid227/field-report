@@ -1,7 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../httpError";
 import { getPrisma } from "../lib/prisma";
-import { storeImage } from "../storage/localImages";
+import {
+  assertSupportedPhoto,
+  maxPhotoBytes,
+  photoStorage,
+  photoTooLargeMessage,
+} from "../storage/cloudinaryImages";
 
 const reportWithImages = {
   images: {
@@ -33,6 +38,12 @@ export async function saveImage(input: SaveImageInput) {
     return existing;
   }
 
+  assertSupportedPhoto(input.mimeType);
+
+  if (input.buffer.length > maxPhotoBytes) {
+    throw new HttpError(413, photoTooLargeMessage);
+  }
+
   try {
     return await getPrisma().$transaction(async (tx) => {
       const report = await tx.report.upsert({
@@ -54,11 +65,21 @@ export async function saveImage(input: SaveImageInput) {
         throw new HttpError(409, "That photo position is already used");
       }
 
-      const stored = await storeImage(
-        input.imageClientId,
-        input.buffer,
-        input.mimeType,
-      );
+      let stored: { url: string; publicId: string };
+
+      try {
+        stored = await photoStorage.save(
+          input.imageClientId,
+          input.buffer,
+          input.mimeType,
+        );
+      } catch (error) {
+        if (error instanceof HttpError) {
+          throw error;
+        }
+
+        throw new HttpError(502, "Photo storage failed");
+      }
 
       return tx.image.create({
         data: {
