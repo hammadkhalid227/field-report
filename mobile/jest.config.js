@@ -8,5 +8,6 @@ module.exports = {
     '^react-native-image-picker$': '<rootDir>/jest/imagePicker.js',
     '^react-native-permissions$': '<rootDir>/jest/permissions.js',
     '^react-native-compressor$': '<rootDir>/jest/compressor.js',
+    '^@react-native-community/netinfo$': '<rootDir>/jest/netinfo.js',
   },
 };

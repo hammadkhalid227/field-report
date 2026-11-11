@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -7,27 +7,21 @@ import {
   Text,
   View,
 } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { RootStackParamList } from '../navigation/types';
+import type { MainTabParamList, RootStackParamList } from '../navigation/types';
+import { phoneStatus } from '../phone/phoneStatus';
 import { reportStore } from '../store/reportStore';
-import type { ReportStatus, StoredReport } from '../store/types';
+import type { StoredReport } from '../store/types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-function statusLabel(status: ReportStatus) {
-  if (status === 'saved') {
-    return 'Saved on this phone';
-  }
-  if (status === 'uploading') {
-    return 'Sending';
-  }
-  if (status === 'uploaded') {
-    return 'Sent';
-  }
-  return "Couldn't send";
-}
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Phone'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 function photoLabel(count: number) {
   if (count === 1) {
@@ -39,37 +33,49 @@ function photoLabel(count: number) {
 export function HomeScreen({ navigation }: Props) {
   const [reports, setReports] = useState<StoredReport[]>([]);
   const [ready, setReady] = useState(false);
+  const [online, setOnline] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    return NetInfo.addEventListener(state => {
+      setOnline(state.isConnected !== false);
+    });
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
 
-      reportStore
-        .list()
-        .then(items => {
-          if (active) {
-            setReports(items);
-            setNotice(null);
-          }
-        })
-        .catch(error => {
-          if (active) {
-            const message =
-              error instanceof Error
-                ? error.message
-                : 'Could not read reports.';
-            setNotice(message);
-          }
-        })
-        .finally(() => {
-          if (active) {
-            setReady(true);
-          }
-        });
+      const load = () => {
+        reportStore
+          .list()
+          .then(items => {
+            if (active) {
+              setReports(items);
+              setNotice(null);
+            }
+          })
+          .catch(error => {
+            if (active) {
+              const message =
+                error instanceof Error
+                  ? error.message
+                  : 'Could not read reports.';
+              setNotice(message);
+            }
+          })
+          .finally(() => {
+            if (active) {
+              setReady(true);
+            }
+          });
+      };
 
+      load();
+      const timer = setInterval(load, 1000);
       return () => {
         active = false;
+        clearInterval(timer);
       };
     }, []),
   );
@@ -92,7 +98,8 @@ export function HomeScreen({ navigation }: Props) {
           <View style={styles.row}>
             <Text style={styles.description}>{item.description}</Text>
             <Text style={styles.meta}>
-              {photoLabel(item.photos.length)} · {statusLabel(item.status)}
+              {photoLabel(item.photos.length)}.{' '}
+              {phoneStatus(item, online, Date.now())}
             </Text>
           </View>
         )}

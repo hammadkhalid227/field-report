@@ -1,4 +1,10 @@
+export type MainTabParamList = {
+  Phone: undefined;
+  Server: undefined;
+};
+
 export type RootStackParamList = {
-  Home: undefined;
+  Main: undefined;
   Compose: undefined;
+  ServerReport: { id: string };
 };

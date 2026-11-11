@@ -77,7 +77,7 @@ export async function saveImage(input: SaveImageInput) {
         if (error instanceof HttpError) {
           throw error;
         }
-
+        
         throw new HttpError(502, "Photo storage failed");
       }
 
