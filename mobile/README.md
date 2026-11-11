@@ -18,7 +18,7 @@ npm install
 npm run android
 ```
 
-On the emulator, set the server address in Settings to `http://10.0.2.2:4000`. On a phone, use your computer's address, such as `http://192.168.18.128:4000`.
+On the emulator, set the server address in Settings to `http://10.0.2.2:4000`. On a phone, use your computer's address, such as `http://192.168.18.128:4000`. It can also be changed directly from mobile/src/api/config.ts.
 
 ## Test
 
