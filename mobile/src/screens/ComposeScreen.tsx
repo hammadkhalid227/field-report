@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(5.3),
     paddingTop: hp(1.5),
     backgroundColor: colors.paper,
+    bottom:hp(2)
   },
   primaryButton: {
     minHeight: hp(6.4),
