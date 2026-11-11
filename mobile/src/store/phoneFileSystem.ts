@@ -1,6 +1,6 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { FileReportStore } from './fileReportStore';
-import type { FileSystem } from './types';
+import type { FileSystem } from '../types/types';
 
 const fs = ReactNativeBlobUtil.fs;
 

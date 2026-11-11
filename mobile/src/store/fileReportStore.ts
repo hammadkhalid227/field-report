@@ -1,4 +1,4 @@
-import { StoreError } from './types';
+import { StoreError } from '../types/types';
 import type {
   FileSystem,
   NewReport,
@@ -6,7 +6,7 @@ import type {
   ReportUpdate,
   StoredPhoto,
   StoredReport,
-} from './types';
+} from '../types/types';
 
 function createId() {
   const cryptoApi = (globalThis as { crypto?: { randomUUID?: () => string } })

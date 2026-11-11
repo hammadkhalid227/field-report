@@ -8,7 +8,7 @@ import {
   type Permission,
 } from 'react-native-permissions';
 
-export type PermissionOutcome = 'granted' | 'denied' | 'blocked';
+import type { PermissionOutcome } from '../types/types';
 
 async function allow(permission: Permission): Promise<PermissionOutcome> {
   let status = await check(permission);

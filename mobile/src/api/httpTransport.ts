@@ -1,7 +1,7 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { getApiBaseUrl } from './config';
+import type { Transport } from '../types/types';
 import { UploadError } from '../upload/engine';
-import type { Transport } from '../upload/engine';
 
 export function failureForStatus(status: number, message: string) {
   const retryable = status === 408 || status === 429 || status >= 500;

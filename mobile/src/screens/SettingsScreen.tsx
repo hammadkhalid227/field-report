@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { getApiBaseUrl, setApiBaseUrl } from '../api/config';
-import { resetMessage } from '../settings/resetMessage';
+import { resetMessage } from '../helpers/resetMessage';
 import { reportStore } from '../store/reportStore';
 import { setUploadsPaused, whenUploadsIdle } from '../upload/startUploader';
 

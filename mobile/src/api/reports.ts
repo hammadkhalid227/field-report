@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from './config';
-import type { ServerReport } from './types';
+import type { ServerReport } from '../types/types';
 
 const readTimeoutMs = 15000;
 

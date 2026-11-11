@@ -1,24 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Image,
   Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/types';
-import { phoneStatus } from '../phone/phoneStatus';
+import { phoneStatus } from '../helpers/phoneStatus';
 import { reportStore } from '../store/reportStore';
-import type { StoredReport } from '../store/types';
 import { formatWhen } from '../helpers/formatWhen';
-import { phoneCardTone } from '../helpers/reportPresentation';
-
-type Props = NativeStackScreenProps<RootStackParamList, 'PhoneReport'>;
+import { LoadingImage } from '../components/LoadingImage';
+import type { PhoneReportScreenProps, StoredReport } from '../types/types';
 
 function displayUri(path: string) {
   if (path.includes('://')) {
@@ -27,15 +23,7 @@ function displayUri(path: string) {
   return `file://${path}`;
 }
 
-const toneColor = {
-  neutral: '#5C564E',
-  progress: '#2F6B4F',
-  ok: '#2F6B4F',
-  warn: '#8A5A12',
-  danger: '#8C2F2F',
-};
-
-export function PhoneReportScreen({ route }: Props) {
+export function PhoneReportScreen({ route }: PhoneReportScreenProps) {
   const [report, setReport] = useState<StoredReport | null>(null);
   const [missing, setMissing] = useState(false);
   const [online, setOnline] = useState(true);
@@ -83,18 +71,32 @@ export function PhoneReportScreen({ route }: Props) {
   }
 
   const now = Date.now();
-  const tone = phoneCardTone(report, online, now);
   const photos = [...report.photos].sort(
     (left, right) => left.position - right.position,
   );
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{report.description}</Text>
-      <Text style={styles.meta}>{formatWhen(report.createdAt)}</Text>
-      <Text style={[styles.status, { color: toneColor[tone] }]}>
-        {phoneStatus(report, online, now)}
-      </Text>
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        value={report.description}
+        editable={false}
+        multiline
+        style={styles.field}
+      />
+      <Text style={styles.label}>Created at</Text>
+      <TextInput
+        value={formatWhen(report.createdAt)}
+        editable={false}
+        style={styles.field}
+      />
+      <Text style={styles.label}>Source</Text>
+      <TextInput
+        value={phoneStatus(report, online, now)}
+        editable={false}
+        multiline
+        style={styles.field}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -104,7 +106,7 @@ export function PhoneReportScreen({ route }: Props) {
           const uri = displayUri(item.localPath);
           return (
             <Pressable key={item.id} onPress={() => setOpenPhoto(uri)}>
-              <Image source={{ uri }} style={styles.thumb} />
+              <LoadingImage uri={uri} style={styles.thumb} />
               <Text style={styles.caption}>Photo {index + 1}</Text>
             </Pressable>
           );
@@ -118,7 +120,11 @@ export function PhoneReportScreen({ route }: Props) {
       >
         <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
           {openPhoto ? (
-            <Image source={{ uri: openPhoto }} style={styles.fullImage} />
+            <LoadingImage
+              uri={openPhoto}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
           ) : null}
         </Pressable>
       </Modal>
@@ -135,21 +141,23 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
   },
-  title: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
-    color: '#1C1915',
+  label: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    color: '#2F6B4F',
   },
-  meta: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: '#5C564E',
-  },
-  status: {
+  field: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: '#2F6B4F',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
     lineHeight: 22,
-    fontWeight: '600',
+    color: '#1C1915',
+    backgroundColor: '#FFFFFF',
   },
   photoRow: {
     gap: 12,

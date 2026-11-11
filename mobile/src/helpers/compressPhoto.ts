@@ -1,5 +1,6 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { Image } from 'react-native-compressor';
+import type { ManualCompress } from '../types/types';
 
 export const maxPhotoBytes = 5 * 1024 * 1024;
 
@@ -16,17 +17,6 @@ export class PhotoTooLargeError extends Error {
     this.name = 'PhotoTooLargeError';
   }
 }
-
-type ManualCompress = (
-  uri: string,
-  options: {
-    compressionMethod: 'manual';
-    maxWidth: number;
-    maxHeight: number;
-    quality: number;
-    output: 'jpg';
-  },
-) => Promise<string>;
 
 async function defaultSize(uri: string) {
   const path = uri.startsWith('file://') ? uri.slice('file://'.length) : uri;

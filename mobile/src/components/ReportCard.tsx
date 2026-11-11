@@ -3,20 +3,9 @@ import { LoaderKitProgress } from 'react-native-loader-kit';
 import { clock, photo } from '../assets/svgs';
 import { AppIcon } from './AppIcon';
 import { formatWhen } from '../helpers/formatWhen';
+import type { ReportCardProps, ReportCardTone } from '../types/types';
 
-type Tone = 'neutral' | 'progress' | 'ok' | 'warn' | 'danger';
-
-type Props = {
-  title: string;
-  createdAt: number | string;
-  photoCount: number;
-  status: string;
-  tone: Tone;
-  progress?: number | null;
-  onPress: () => void;
-};
-
-const toneColor: Record<Tone, string> = {
+const toneColor: Record<ReportCardTone, string> = {
   neutral: '#5C564E',
   progress: '#2F6B4F',
   ok: '#2F6B4F',
@@ -39,7 +28,7 @@ export function ReportCard({
   tone,
   progress,
   onPress,
-}: Props) {
+}: ReportCardProps) {
   const color = toneColor[tone];
   const when = formatWhen(createdAt);
 

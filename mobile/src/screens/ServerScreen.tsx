@@ -2,32 +2,27 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Modal,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
-import type { CompositeScreenProps } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { fetchServerReport, fetchServerReports } from '../api/reports';
-import type { ServerReport } from '../api/types';
-import type { MainTabParamList, RootStackParamList } from '../navigation/types';
+import type {
+  ServerReport,
+  ServerReportScreenProps,
+  ServerScreenProps,
+} from '../types/types';
 import { formatWhen } from '../helpers/formatWhen';
+import { LoadingImage } from '../components/LoadingImage';
 import { ReportCard } from '../components/ReportCard';
 
-type ListProps = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Server'>,
-  NativeStackScreenProps<RootStackParamList>
->;
-type DetailProps = NativeStackScreenProps<RootStackParamList, 'ServerReport'>;
-
-export function ServerScreen({ navigation }: ListProps) {
+export function ServerScreen({ navigation }: ServerScreenProps) {
   const [reports, setReports] = useState<ServerReport[]>([]);
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -104,7 +99,7 @@ export function ServerScreen({ navigation }: ListProps) {
   );
 }
 
-export function ServerReportScreen({ route }: DetailProps) {
+export function ServerReportScreen({ route }: ServerReportScreenProps) {
   const [report, setReport] = useState<ServerReport | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [openPhoto, setOpenPhoto] = useState<string | null>(null);
@@ -156,13 +151,23 @@ export function ServerReportScreen({ route }: DetailProps) {
   const when = report.completedAt ?? report.createdAt;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.detail}>
-      <Text style={styles.title}>{report.description}</Text>
-      <Text style={styles.meta}>{formatWhen(when)}</Text>
-      <Text style={styles.serverStatus}>On the server.</Text>
-      <Text style={styles.meta}>
-        {images.length === 1 ? '1 photo' : `${images.length} photos`}
-      </Text>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        value={report.description}
+        editable={false}
+        multiline
+        style={styles.field}
+      />
+      <Text style={styles.label}>Created at</Text>
+      <TextInput value={formatWhen(when)} editable={false} style={styles.field} />
+      <Text style={styles.label}>Source</Text>
+      <TextInput
+        value="On the server."
+        editable={false}
+        multiline
+        style={styles.field}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -170,7 +175,7 @@ export function ServerReportScreen({ route }: DetailProps) {
       >
         {images.map((image, index) => (
           <Pressable key={image.id} onPress={() => setOpenPhoto(image.url)}>
-            <Image source={{ uri: image.url }} style={styles.thumb} />
+            <LoadingImage uri={image.url} style={styles.thumb} />
             <Text style={styles.caption}>Photo {index + 1}</Text>
           </Pressable>
         ))}
@@ -183,7 +188,11 @@ export function ServerReportScreen({ route }: DetailProps) {
       >
         <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
           {openPhoto ? (
-            <Image source={{ uri: openPhoto }} style={styles.fullImage} />
+            <LoadingImage
+              uri={openPhoto}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
           ) : null}
         </Pressable>
       </Modal>
@@ -201,25 +210,9 @@ const styles = StyleSheet.create({
     gap: 12,
     flexGrow: 1,
   },
-  meta: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: '#5C564E',
-  },
-  title: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '700',
-    color: '#1C1915',
-  },
-  serverStatus: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: '600',
-    color: '#2F6B4F',
-  },
   caption: {
-    fontSize: 14,
+    marginTop: 6,
+    fontSize: 13,
     color: '#5C564E',
   },
   empty: {
@@ -253,9 +246,27 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#2F6B4F',
   },
-  detail: {
+  content: {
     padding: 20,
-    gap: 16,
+    gap: 12,
+  },
+  label: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    color: '#2F6B4F',
+  },
+  field: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: '#2F6B4F',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    lineHeight: 22,
+    color: '#1C1915',
+    backgroundColor: '#FFFFFF',
   },
   photoRow: {
     gap: 12,

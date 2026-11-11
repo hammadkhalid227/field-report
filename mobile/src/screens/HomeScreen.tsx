@@ -8,28 +8,19 @@ import {
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { MainTabParamList, RootStackParamList } from '../navigation/types';
-import { phoneStatus } from '../phone/phoneStatus';
+import type { HomeScreenProps, StoredReport } from '../types/types';
+import { phoneStatus } from '../helpers/phoneStatus';
 import { add } from '../assets/svgs';
 import { AppIcon } from '../components/AppIcon';
 import { reportStore } from '../store/reportStore';
-import type { StoredReport } from '../store/types';
 import { ReportCard } from '../components/ReportCard';
 import {
   phoneCardProgress,
   phoneCardTone,
 } from '../helpers/reportPresentation';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Phone'>,
-  NativeStackScreenProps<RootStackParamList>
->;
-
-export function HomeScreen({ navigation }: Props) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const [reports, setReports] = useState<StoredReport[]>([]);
   const [ready, setReady] = useState(false);
   const [online, setOnline] = useState(true);

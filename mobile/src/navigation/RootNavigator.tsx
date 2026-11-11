@@ -9,7 +9,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { PhoneReportScreen } from '../screens/PhoneReportScreen';
 import { ServerReportScreen, ServerScreen } from '../screens/ServerScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
-import type { MainTabParamList, RootStackParamList } from './types';
+import type { MainTabParamList, RootStackParamList } from '../types/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -17,9 +17,9 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const screenOptions = {
   headerShown: true,
   headerShadowVisible: false,
-  headerStyle: { backgroundColor: '#F7F6F3' },
-  headerTintColor: '#2F6B4F',
-  headerTitleStyle: { fontWeight: '600' as const, color: '#2F6B4F' },
+  headerStyle: { backgroundColor: '#2F6B4F' },
+  headerTintColor: '#F7F6F3',
+  headerTitleStyle: { fontWeight: '600' as const, color: '#F7F6F3' },
   contentStyle: { backgroundColor: '#F7F6F3' },
 };
 
@@ -41,11 +41,11 @@ function MainTabs() {
       screenOptions={{
         ...screenOptions,
         tabBarStyle: {
-          backgroundColor: '#F7F6F3',
-          borderTopColor: '#D9D3C8',
+          backgroundColor: '#2F6B4F',
+          borderTopColor: '#2F6B4F',
         },
-        tabBarActiveTintColor: '#2F6B4F',
-        tabBarInactiveTintColor: '#5C564E',
+        tabBarActiveTintColor: '#F7F6F3',
+        tabBarInactiveTintColor: '#D7E5DC',
       }}
     >
       <Tab.Screen
@@ -93,12 +93,12 @@ export function RootNavigator() {
         <Stack.Screen
           name="PhoneReport"
           component={PhoneReportScreen}
-          options={{ title: 'On this phone' }}
+          options={{ title: 'Report details' }}
         />
         <Stack.Screen
           name="ServerReport"
           component={ServerReportScreen}
-          options={{ title: 'On the server' }}
+          options={{ title: 'Report details' }}
         />
       </Stack.Navigator>
       <ConnectionModal />

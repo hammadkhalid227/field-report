@@ -1,4 +1,4 @@
-import type { StoredReport } from '../store/types';
+import type { StoredReport } from '../types/types';
 
 export function phoneStatus(
   report: StoredReport,

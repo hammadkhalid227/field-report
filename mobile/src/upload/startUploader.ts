@@ -1,7 +1,6 @@
 import { AppState } from 'react-native';
 import { tick, retryDelayMs } from './engine';
-import type { Transport } from './engine';
-import type { ReportStore } from '../store/types';
+import type { ReportStore, Transport } from '../types/types';
 
 let uploadsPaused = false;
 let uploadsRunning = false;

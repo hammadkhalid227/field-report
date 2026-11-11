@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   AppState,
-  Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -14,26 +14,23 @@ import {
 } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { ImagePickerResponse } from 'react-native-image-picker';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { RootStackParamList } from '../navigation/types';
+import type {
+  ComposeScreenProps,
+  DraftPhoto,
+  PermissionOutcome,
+} from '../types/types';
+import { camera, gallery } from '../assets/svgs';
+import { AppIcon } from '../components/AppIcon';
+import { LoadingImage } from '../components/LoadingImage';
 import { reportStore } from '../store/reportStore';
-import { canSave, maxPhotos } from '../compose/canSave';
-import { compressPhoto, PhotoTooLargeError } from '../compose/compressPhoto';
+import { canSave, maxPhotos } from '../helpers/canSave';
+import { compressPhoto, PhotoTooLargeError } from '../helpers/compressPhoto';
 import {
   cameraAccess,
   galleryAccess,
   openAppSettings,
-  type PermissionOutcome,
-} from '../compose/permissions';
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Compose'>;
-
-type DraftPhoto = {
-  id: string;
-  status: 'preparing' | 'ready';
-  uri: string;
-};
+} from '../helpers/permissions';
 
 function draftId() {
   return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
@@ -49,12 +46,13 @@ function photoUris(response: ImagePickerResponse) {
   return uris;
 }
 
-export function ComposeScreen({ navigation }: Props) {
+export function ComposeScreen({ navigation }: ComposeScreenProps) {
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
@@ -170,9 +168,12 @@ export function ComposeScreen({ navigation }: Props) {
     addPhotos(photoUris(response));
   }
 
-  function removePhoto(index: number) {
-    setPhotos(current =>
-      current.filter((_, photoIndex) => photoIndex !== index),
+  function removePhoto(id: string) {
+    setPhotos(current => current.filter(photo => photo.id !== id));
+    setOpenPhoto(current =>
+      photos.some(photo => photo.id === id && photo.uri === current)
+        ? null
+        : current,
     );
   }
 
@@ -231,22 +232,30 @@ export function ComposeScreen({ navigation }: Props) {
           </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {photos.map((photo, index) => (
+            {photos.map(photo => (
               <View key={photo.id} style={styles.photoCard}>
-                {photo.status === 'ready' ? (
-                  <Image source={{ uri: photo.uri }} style={styles.photo} />
-                ) : (
-                  <View style={styles.preparing}>
-                    <ActivityIndicator color="#2F6B4F" />
-                    <Text style={styles.preparingText}>Preparing…</Text>
-                  </View>
-                )}
                 <Pressable
-                  onPress={() => removePhoto(index)}
+                  onPress={() => {
+                    if (photo.status === 'ready') {
+                      setOpenPhoto(photo.uri);
+                    }
+                  }}
+                >
+                  {photo.status === 'ready' ? (
+                    <LoadingImage uri={photo.uri} style={styles.photo} />
+                  ) : (
+                    <View style={styles.preparing}>
+                      <ActivityIndicator color="#2F6B4F" />
+                      <Text style={styles.preparingText}>Preparing…</Text>
+                    </View>
+                  )}
+                </Pressable>
+                <Pressable
+                  onPress={() => removePhoto(photo.id)}
                   style={styles.removeButton}
                   hitSlop={8}
                 >
-                  <Text style={styles.removeText}>Remove</Text>
+                  <Text style={styles.removeText}>×</Text>
                 </Pressable>
               </View>
             ))}
@@ -257,6 +266,7 @@ export function ComposeScreen({ navigation }: Props) {
             disabled={!roomLeft || saving}
             style={[styles.secondaryButton, !roomLeft && styles.disabled]}
           >
+            <AppIcon xml={camera} size={20} color="#2F6B4F" />
             <Text style={styles.secondaryText}>Take photo</Text>
           </Pressable>
           <Pressable
@@ -264,6 +274,7 @@ export function ComposeScreen({ navigation }: Props) {
             disabled={!roomLeft || saving}
             style={[styles.secondaryButton, !roomLeft && styles.disabled]}
           >
+            <AppIcon xml={gallery} size={20} color="#2F6B4F" />
             <Text style={styles.secondaryText}>Choose from gallery</Text>
           </Pressable>
 
@@ -286,6 +297,22 @@ export function ComposeScreen({ navigation }: Props) {
             )}
           </Pressable>
         </ScrollView>
+        <Modal
+          visible={openPhoto !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setOpenPhoto(null)}
+        >
+          <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
+            {openPhoto ? (
+              <LoadingImage
+                uri={openPhoto}
+                style={styles.fullImage}
+                resizeMode="contain"
+              />
+            ) : null}
+          </Pressable>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -325,6 +352,23 @@ const styles = StyleSheet.create({
   photoCard: {
     marginRight: 12,
   },
+  removeButton: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2F6B4F',
+  },
+  removeText: {
+    color: '#F7F6F3',
+    fontSize: 16,
+    lineHeight: 18,
+    fontWeight: '700',
+  },
   photo: {
     width: 96,
     height: 96,
@@ -344,21 +388,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#5C564E',
   },
-  removeButton: {
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  removeText: {
-    color: '#8C2F2F',
-    fontSize: 15,
-  },
   secondaryButton: {
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#2F6B4F',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
     paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
   },
@@ -386,5 +424,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: '#1C1915',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(28, 25, 21, 0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  fullImage: {
+    width: '100%',
+    height: '70%',
+    borderRadius: 16,
   },
 });

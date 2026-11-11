@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,7 +9,6 @@ import { reportStore } from './src/store/reportStore';
 import { startUploader } from './src/upload/startUploader';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
   const online = useRef(true);
 
   useEffect(() => {
@@ -35,7 +34,7 @@ function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <StatusBar barStyle="light-content" />
         <RootNavigator />
       </NavigationContainer>
     </SafeAreaProvider>

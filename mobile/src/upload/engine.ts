@@ -1,4 +1,10 @@
-import type { ReportStore, StoredReport } from '../store/types';
+import type {
+  ReportStore,
+  StoredReport,
+  TickOptions,
+  TickResult,
+  Transport,
+} from '../types/types';
 
 export const retryDelayMs = 5000;
 export const stallMs = 45000;
@@ -12,36 +18,6 @@ export class UploadError extends Error {
     this.retryable = retryable;
   }
 }
-
-export type UploadPhotoInput = {
-  reportClientId: string;
-  imageClientId: string;
-  position: number;
-  filePath: string;
-  onProgress: () => void;
-};
-
-export type CompleteReportInput = {
-  reportClientId: string;
-  description: string;
-};
-
-export type Transport = {
-  uploadPhoto(input: UploadPhotoInput): Promise<{ url: string }>;
-  completeReport(input: CompleteReportInput): Promise<{ id: string }>;
-};
-
-export type TickOptions = {
-  now?: number;
-  online?: boolean;
-  stallMs?: number;
-};
-
-export type TickResult = {
-  uploadedIds: string[];
-  deferredIds: string[];
-  heldIds: string[];
-};
 
 function nextReport(reports: StoredReport[], now: number) {
   return reports
