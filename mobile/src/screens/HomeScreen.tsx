@@ -9,6 +9,8 @@ import {
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
 import type { HomeScreenProps, StoredReport } from '../types/types';
 import { phoneStatus } from '../helpers/phoneStatus';
 import { add } from '../assets/svgs';
@@ -81,7 +83,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           ready ? (
             <Text style={styles.empty}>No reports on this phone yet.</Text>
           ) : (
-            <ActivityIndicator color="#2F6B4F" />
+            <ActivityIndicator color={colors.primary} />
           )
         }
         renderItem={({ item }) => {
@@ -106,7 +108,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         style={styles.fab}
         accessibilityLabel="New report"
       >
-        <AppIcon xml={add} size={28} color="#F7F6F3" />
+        <AppIcon xml={add} size={rf(28)} color={colors.paper} />
       </Pressable>
     </SafeAreaView>
   );
@@ -115,36 +117,36 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F7F6F3',
+    backgroundColor: colors.paper,
   },
   list: {
-    padding: 20,
-    gap: 12,
+    padding: wp(5.3),
+    gap: hp(1.5),
     flexGrow: 1,
-    paddingBottom: 96,
+    paddingBottom: hp(11.8),
   },
   empty: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
-    marginTop: 12,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
+    marginTop: hp(1.5),
   },
   notice: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#8C2F2F',
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.danger,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    right: wp(5.3),
+    bottom: hp(2.5),
+    width: wp(16),
+    height: wp(16),
+    borderRadius: wp(8),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2F6B4F',
+    backgroundColor: colors.primary,
   },
 });

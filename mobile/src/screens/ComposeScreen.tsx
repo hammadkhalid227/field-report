@@ -4,7 +4,6 @@ import {
   AppState,
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,7 +13,10 @@ import {
 } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { ImagePickerResponse } from 'react-native-image-picker';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
 import type {
   ComposeScreenProps,
   DraftPhoto,
@@ -31,6 +33,7 @@ import {
   galleryAccess,
   openAppSettings,
 } from '../helpers/permissions';
+import { useKeyboardOpen } from '../helpers/useKeyboardOpen';
 
 function draftId() {
   return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
@@ -47,6 +50,8 @@ function photoUris(response: ImagePickerResponse) {
 }
 
 export function ComposeScreen({ navigation }: ComposeScreenProps) {
+  const headerHeight = useHeaderHeight();
+  const keyboardOpen = useKeyboardOpen();
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<DraftPhoto[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -204,12 +209,14 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
   const ready = canSave(description, photos.length) && photosReady && !saving;
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.screen}>
+    <SafeAreaView edges={keyboardOpen ? [] : ['bottom']} style={styles.screen}>
       <KeyboardAvoidingView
         style={styles.screen}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
+        keyboardVerticalOffset={headerHeight}
       >
         <ScrollView
+          style={styles.screen}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
@@ -221,7 +228,7 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
             value={description}
             onChangeText={setDescription}
             placeholder="What did you see?"
-            placeholderTextColor="#7A736A"
+            placeholderTextColor={colors.placeholder}
             multiline
             maxLength={500}
             style={styles.input}
@@ -245,7 +252,7 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
                     <LoadingImage uri={photo.uri} style={styles.photo} />
                   ) : (
                     <View style={styles.preparing}>
-                      <ActivityIndicator color="#2F6B4F" />
+                      <ActivityIndicator color={colors.primary} />
                       <Text style={styles.preparingText}>Preparing…</Text>
                     </View>
                   )}
@@ -253,7 +260,7 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
                 <Pressable
                   onPress={() => removePhoto(photo.id)}
                   style={styles.removeButton}
-                  hitSlop={8}
+                  hitSlop={wp(2.1)}
                 >
                   <Text style={styles.removeText}>×</Text>
                 </Pressable>
@@ -266,7 +273,7 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
             disabled={!roomLeft || saving}
             style={[styles.secondaryButton, !roomLeft && styles.disabled]}
           >
-            <AppIcon xml={camera} size={20} color="#2F6B4F" />
+            <AppIcon xml={camera} size={rf(20)} color={colors.primary} />
             <Text style={styles.secondaryText}>Take photo</Text>
           </Pressable>
           <Pressable
@@ -274,7 +281,7 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
             disabled={!roomLeft || saving}
             style={[styles.secondaryButton, !roomLeft && styles.disabled]}
           >
-            <AppIcon xml={gallery} size={20} color="#2F6B4F" />
+            <AppIcon xml={gallery} size={rf(20)} color={colors.primary} />
             <Text style={styles.secondaryText}>Choose from gallery</Text>
           </Pressable>
 
@@ -284,19 +291,20 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
               <Text style={styles.secondaryText}>Open Settings</Text>
             </Pressable>
           ) : null}
-
+        </ScrollView>
+        <View style={styles.footer}>
           <Pressable
             onPress={saveReport}
             disabled={!ready}
             style={[styles.primaryButton, !ready && styles.disabled]}
           >
             {saving ? (
-              <ActivityIndicator color="#F7F6F3" />
+              <ActivityIndicator color={colors.paper} />
             ) : (
               <Text style={styles.primaryText}>Save on this phone</Text>
             )}
           </Pressable>
-        </ScrollView>
+        </View>
         <Modal
           visible={openPhoto !== null}
           transparent
@@ -321,120 +329,125 @@ export function ComposeScreen({ navigation }: ComposeScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F7F6F3',
+    backgroundColor: colors.paper,
   },
   content: {
-    paddingTop: 16,
-    paddingHorizontal: 20,
-    gap: 12,
+    paddingTop: hp(2),
+    paddingHorizontal: wp(5.3),
+    gap: hp(1.5),
+    paddingBottom: hp(1.5),
   },
   help: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
   },
   input: {
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: '#D9D3C8',
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 18,
-    lineHeight: 24,
-    color: '#1C1915',
-    backgroundColor: '#FFFFFF',
+    minHeight: hp(14.8),
+    borderWidth: wp(0.3),
+    borderColor: colors.line,
+    borderRadius: wp(3.2),
+    padding: wp(3.7),
+    fontSize: rf(18),
+    lineHeight: rf(24),
+    color: colors.ink,
+    backgroundColor: colors.white,
     textAlignVertical: 'top',
   },
   count: {
-    fontSize: 15,
-    color: '#5C564E',
+    fontSize: rf(15),
+    color: colors.muted,
   },
   photoCard: {
-    marginRight: 12,
+    marginRight: wp(3.2),
   },
   removeButton: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: wp(1.6),
+    right: wp(1.6),
+    width: wp(5.9),
+    height: wp(5.9),
+    borderRadius: wp(3),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2F6B4F',
+    backgroundColor: colors.primary,
   },
   removeText: {
-    color: '#F7F6F3',
-    fontSize: 16,
-    lineHeight: 18,
+    color: colors.paper,
+    fontSize: rf(16),
+    lineHeight: rf(18),
     fontWeight: '700',
   },
   photo: {
-    width: 96,
-    height: 96,
-    borderRadius: 10,
-    backgroundColor: '#E6E1D8',
+    width: wp(25.6),
+    height: wp(25.6),
+    borderRadius: wp(2.7),
+    backgroundColor: colors.photo,
   },
   preparing: {
-    width: 96,
-    height: 96,
-    borderRadius: 10,
-    backgroundColor: '#E6E1D8',
+    width: wp(25.6),
+    height: wp(25.6),
+    borderRadius: wp(2.7),
+    backgroundColor: colors.photo,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: hp(0.7),
   },
   preparingText: {
-    fontSize: 12,
-    color: '#5C564E',
+    fontSize: rf(12),
+    color: colors.muted,
   },
   secondaryButton: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#2F6B4F',
+    minHeight: hp(5.9),
+    borderRadius: wp(3.2),
+    borderWidth: wp(0.3),
+    borderColor: colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    gap: wp(2.1),
+    paddingHorizontal: wp(4.3),
+    backgroundColor: colors.white,
   },
   secondaryText: {
-    fontSize: 17,
-    color: '#2F6B4F',
+    fontSize: rf(17),
+    color: colors.primary,
+  },
+  footer: {
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(1.5),
+    backgroundColor: colors.paper,
   },
   primaryButton: {
-    minHeight: 52,
-    borderRadius: 12,
+    minHeight: hp(6.4),
+    borderRadius: wp(3.2),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2F6B4F',
-    marginTop: 8,
+    backgroundColor: colors.primary,
   },
   primaryText: {
-    fontSize: 17,
-    color: '#F7F6F3',
+    fontSize: rf(17),
+    color: colors.paper,
     fontWeight: '600',
   },
   disabled: {
     opacity: 0.4,
   },
   notice: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#1C1915',
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.ink,
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(28, 25, 21, 0.88)',
+    backgroundColor: colors.backdrop,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: wp(5.3),
   },
   fullImage: {
-    width: '100%',
-    height: '70%',
-    borderRadius: 16,
+    alignSelf: 'stretch',
+    height: hp(70),
+    borderRadius: wp(4.3),
   },
 });

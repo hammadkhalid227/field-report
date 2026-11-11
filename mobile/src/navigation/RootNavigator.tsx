@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { colors } from '../constants/colors';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { mobile, server, settings } from '../assets/svgs';
@@ -17,10 +18,10 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const screenOptions = {
   headerShown: true,
   headerShadowVisible: false,
-  headerStyle: { backgroundColor: '#2F6B4F' },
-  headerTintColor: '#F7F6F3',
-  headerTitleStyle: { fontWeight: '600' as const, color: '#F7F6F3' },
-  contentStyle: { backgroundColor: '#F7F6F3' },
+  headerStyle: { backgroundColor: colors.primary },
+  headerTintColor: colors.paper,
+  headerTitleStyle: { fontWeight: '600' as const, color: colors.paper },
+  contentStyle: { backgroundColor: colors.paper },
 };
 
 function PhoneTabIcon({ color, size }: { color: string; size: number }) {
@@ -41,11 +42,11 @@ function MainTabs() {
       screenOptions={{
         ...screenOptions,
         tabBarStyle: {
-          backgroundColor: '#2F6B4F',
-          borderTopColor: '#2F6B4F',
+          backgroundColor: colors.primary,
+          borderTopColor: colors.primary,
         },
-        tabBarActiveTintColor: '#F7F6F3',
-        tabBarInactiveTintColor: '#D7E5DC',
+        tabBarActiveTintColor: colors.paper,
+        tabBarInactiveTintColor: colors.tabInactive,
       }}
     >
       <Tab.Screen

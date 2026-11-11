@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { internet_connected, internet_disconnected } from '../assets/svgs';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
 import { AppIcon } from './AppIcon';
 
 export function ConnectionModal() {
@@ -49,8 +51,8 @@ export function ConnectionModal() {
         <View style={styles.sheet}>
           <AppIcon
             xml={online ? internet_connected : internet_disconnected}
-            size={72}
-            color={online ? '#2F6B4F' : '#8C2F2F'}
+            size={wp(19.2)}
+            color={online ? colors.primary : colors.danger}
           />
           <Text style={styles.title}>
             {online ? 'Back online' : 'No connection'}
@@ -72,43 +74,43 @@ export function ConnectionModal() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(28, 25, 21, 0.45)',
+    backgroundColor: colors.scrim,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: wp(6.4),
   },
   sheet: {
-    width: '100%',
-    backgroundColor: '#F7F6F3',
-    borderRadius: 20,
-    padding: 24,
+    alignSelf: 'stretch',
+    backgroundColor: colors.paper,
+    borderRadius: wp(5.3),
+    padding: wp(6.4),
     alignItems: 'center',
-    gap: 12,
+    gap: hp(1.5),
   },
   title: {
-    fontSize: 22,
-    lineHeight: 28,
+    fontSize: rf(22),
+    lineHeight: rf(28),
     fontWeight: '700',
-    color: '#1C1915',
+    color: colors.ink,
   },
   body: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
     textAlign: 'center',
   },
   button: {
-    minHeight: 48,
-    minWidth: 120,
-    borderRadius: 12,
+    minHeight: hp(5.9),
+    minWidth: wp(32),
+    borderRadius: wp(3.2),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2F6B4F',
-    marginTop: 8,
+    backgroundColor: colors.primary,
+    marginTop: hp(1),
   },
   buttonText: {
-    fontSize: 17,
-    color: '#F7F6F3',
+    fontSize: rf(17),
+    color: colors.paper,
     fontWeight: '600',
   },
 });

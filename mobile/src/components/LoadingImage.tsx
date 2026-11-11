@@ -7,6 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { colors } from '../constants/colors';
 
 type Props = {
   uri: string;
@@ -29,7 +30,7 @@ export function LoadingImage({ uri, style, resizeMode = 'cover' }: Props) {
       />
       {loaded ? null : (
         <View style={styles.overlay}>
-          <ActivityIndicator color="#2F6B4F" />
+          <ActivityIndicator color={colors.primary} />
         </View>
       )}
     </View>
@@ -39,7 +40,7 @@ export function LoadingImage({ uri, style, resizeMode = 'cover' }: Props) {
 const styles = StyleSheet.create({
   frame: {
     overflow: 'hidden',
-    backgroundColor: '#E6E1D8',
+    backgroundColor: colors.photo,
   },
   image: {
     width: '100%',

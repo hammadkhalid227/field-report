@@ -21,6 +21,8 @@ import type {
 import { formatWhen } from '../helpers/formatWhen';
 import { LoadingImage } from '../components/LoadingImage';
 import { ReportCard } from '../components/ReportCard';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
 
 export function ServerScreen({ navigation }: ServerScreenProps) {
   const [reports, setReports] = useState<ServerReport[]>([]);
@@ -72,12 +74,12 @@ export function ServerScreen({ navigation }: ServerScreenProps) {
               setRefreshing(true);
               load();
             }}
-            tintColor="#2F6B4F"
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
           !ready ? (
-            <ActivityIndicator color="#2F6B4F" />
+            <ActivityIndicator color={colors.primary} />
           ) : notice ? (
             <View />
           ) : (
@@ -140,7 +142,7 @@ export function ServerReportScreen({ route }: ServerReportScreenProps) {
   if (!report) {
     return (
       <View style={styles.screen}>
-        <ActivityIndicator color="#2F6B4F" />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -203,91 +205,91 @@ export function ServerReportScreen({ route }: ServerReportScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F7F6F3',
+    backgroundColor: colors.paper,
   },
   list: {
-    padding: 20,
-    gap: 12,
+    padding: wp(5.3),
+    gap: hp(1.5),
     flexGrow: 1,
   },
   caption: {
-    marginTop: 6,
-    fontSize: 13,
-    color: '#5C564E',
+    marginTop: hp(0.7),
+    fontSize: rf(13),
+    color: colors.muted,
   },
   empty: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
-    marginTop: 12,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
+    marginTop: hp(1.5),
   },
   noticeBox: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    gap: 12,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
+    gap: hp(1.5),
   },
   notice: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#1C1915',
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.ink,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
   },
   secondaryButton: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#2F6B4F',
+    minHeight: hp(5.9),
+    borderRadius: wp(3.2),
+    borderWidth: wp(0.3),
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
   },
   secondaryText: {
-    fontSize: 17,
-    color: '#2F6B4F',
+    fontSize: rf(17),
+    color: colors.primary,
   },
   content: {
-    padding: 20,
-    gap: 12,
+    padding: wp(5.3),
+    gap: hp(1.5),
   },
   label: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: rf(14),
+    lineHeight: rf(18),
     fontWeight: '600',
-    color: '#2F6B4F',
+    color: colors.primary,
   },
   field: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#2F6B4F',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#1C1915',
-    backgroundColor: '#FFFFFF',
+    minHeight: hp(5.9),
+    borderWidth: wp(0.3),
+    borderColor: colors.primary,
+    borderRadius: wp(3.2),
+    paddingHorizontal: wp(3.7),
+    paddingVertical: hp(1.5),
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.ink,
+    backgroundColor: colors.white,
   },
   photoRow: {
-    gap: 12,
-    paddingVertical: 4,
+    gap: wp(3.2),
+    paddingVertical: hp(0.5),
   },
   thumb: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    backgroundColor: '#E6E1D8',
+    width: wp(25.6),
+    height: wp(25.6),
+    borderRadius: wp(3.2),
+    backgroundColor: colors.photo,
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(28, 25, 21, 0.88)',
+    backgroundColor: colors.backdrop,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: wp(5.3),
   },
   fullImage: {
-    width: '100%',
-    height: '70%',
-    borderRadius: 16,
+    alignSelf: 'stretch',
+    height: hp(70),
+    borderRadius: wp(4.3),
   },
 });

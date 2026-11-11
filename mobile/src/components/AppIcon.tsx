@@ -1,7 +1,13 @@
 import { SvgXml } from 'react-native-svg';
+import { colors } from '../constants/colors';
+import { rf } from '../constants/dimmensions';
 import type { AppIconProps } from '../types/types';
 
-export function AppIcon({ xml, size = 24, color = '#2F6B4F' }: AppIconProps) {
-  const tinted = xml.replace(/#2F6B4F/gi, color).replace(/#000000/gi, color);
+export function AppIcon({
+  xml,
+  size = rf(24),
+  color = colors.primary,
+}: AppIconProps) {
+  const tinted = xml.replace(/ICON_TINT/g, color);
   return <SvgXml xml={tinted} width={size} height={size} />;
 }
