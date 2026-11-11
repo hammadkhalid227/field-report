@@ -5,10 +5,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { hp, rf, wp } from '../constants/dimmensions';
 import type { HomeScreenProps, StoredReport } from '../types/types';
@@ -73,7 +73,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   );
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.screen}>
+    <View style={styles.screen}>
       {notice ? <Text style={styles.notice}>{notice}</Text> : null}
       <FlatList
         data={reports}
@@ -110,7 +110,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       >
         <AppIcon xml={add} size={rf(28)} color={colors.paper} />
       </Pressable>
-    </SafeAreaView>
+    </View>
   );
 }
 
