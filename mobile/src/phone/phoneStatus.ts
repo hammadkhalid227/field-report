@@ -24,8 +24,6 @@ export function phoneStatus(
   }
 
   if (report.lastError || report.nextAttemptAt > now) {
-    console.log('----------REPORT-------------',report);
-    
     return 'Will keep trying.';
   }
 

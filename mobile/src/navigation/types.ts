@@ -1,6 +1,7 @@
 export type MainTabParamList = {
   Phone: undefined;
   Server: undefined;
+  Settings: undefined;
 };
 
 export type RootStackParamList = {

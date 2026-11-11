@@ -59,6 +59,10 @@ export class FileReportStore implements ReportStore {
     return this.run(() => this.updateNow(id, patch));
   }
 
+  clear() {
+    return this.run(() => this.clearNow());
+  }
+
   private run<T>(job: () => Promise<T>) {
     const result = this.pending.then(job, job);
     this.pending = result.then(
@@ -117,7 +121,7 @@ export class FileReportStore implements ReportStore {
     for (let position = 0; position < input.photos.length; position += 1) {
       const photo = input.photos[position];
       const photoId = photo.id ?? createId();
-   
+
       const localPath = joinPath(this.root, 'reports', id, `${photoId}.jpg`);
       await this.files.copy(photo.sourcePath, localPath);
       photos.push({
@@ -178,5 +182,19 @@ export class FileReportStore implements ReportStore {
     reports[index] = updated;
     await this.writeAll(reports);
     return updated;
+  }
+
+  private async clearNow() {
+    const reports = await this.readAll();
+
+    for (const report of reports) {
+      for (const photo of report.photos) {
+        await this.files.remove(photo.localPath);
+      }
+    }
+
+    await this.files.remove(this.queuePath());
+    await this.files.remove(joinPath(this.root, 'queue.json.tmp'));
+    await this.files.remove(joinPath(this.root, 'reports'));
   }
 }

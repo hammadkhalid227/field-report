@@ -68,4 +68,5 @@ export type ReportStore = {
   list(): Promise<StoredReport[]>;
   get(id: string): Promise<StoredReport | null>;
   update(id: string, patch: ReportUpdate): Promise<StoredReport>;
+  clear(): Promise<void>;
 };

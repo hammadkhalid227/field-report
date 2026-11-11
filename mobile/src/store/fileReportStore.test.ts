@@ -154,6 +154,20 @@ describe('file report store', () => {
     );
   });
 
+  it('clears the saved list and the copied photos', async () => {
+    const { disk, store } = setup();
+    const saved = await store.save({
+      description: 'Handrail',
+      photos: [{ sourcePath: '/camera/one.jpg' }],
+    });
+
+    await store.clear();
+
+    expect(await store.list()).toEqual([]);
+    expect(disk.files.has('/phone/queue.json')).toBe(false);
+    expect(disk.files.has(saved.photos[0].localPath)).toBe(false);
+  });
+
   it('rejects a description longer than 500 characters', async () => {
     const { store } = setup();
 

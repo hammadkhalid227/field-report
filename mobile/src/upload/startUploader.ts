@@ -3,24 +3,43 @@ import { tick, retryDelayMs } from './engine';
 import type { Transport } from './engine';
 import type { ReportStore } from '../store/types';
 
+let uploadsPaused = false;
+let uploadsRunning = false;
+const idleWaiters: Array<() => void> = [];
+
+export function setUploadsPaused(paused: boolean) {
+  uploadsPaused = paused;
+}
+
+export function whenUploadsIdle() {
+  if (!uploadsRunning) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>(resolve => {
+    idleWaiters.push(resolve);
+  });
+}
+
 export function startUploader(
   store: ReportStore,
   transport: Transport,
   getOnline: () => boolean,
 ) {
   let stopped = false;
-  let running = false;
 
   const run = () => {
-    if (stopped || running) {
+    if (stopped || uploadsRunning || uploadsPaused) {
       return;
     }
 
-    running = true;
+    uploadsRunning = true;
     tick(store, transport, { online: getOnline() })
       .catch(() => undefined)
       .finally(() => {
-        running = false;
+        uploadsRunning = false;
+        const waiting = idleWaiters.splice(0);
+        waiting.forEach(resolve => resolve());
       });
   };
 

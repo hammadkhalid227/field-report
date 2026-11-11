@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ComposeScreen } from '../screens/ComposeScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ServerReportScreen, ServerScreen } from '../screens/ServerScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import type { MainTabParamList, RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -38,6 +39,11 @@ function MainTabs() {
         name="Server"
         component={ServerScreen}
         options={{ title: 'On the server' }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Settings' }}
       />
     </Tab.Navigator>
   );
