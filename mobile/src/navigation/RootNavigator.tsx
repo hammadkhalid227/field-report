@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ComposeScreen } from '../screens/ComposeScreen';
 import { HomeScreen } from '../screens/HomeScreen';
+import { PhoneReportScreen } from '../screens/PhoneReportScreen';
 import { ServerReportScreen, ServerScreen } from '../screens/ServerScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import type { MainTabParamList, RootStackParamList } from './types';
@@ -61,6 +62,11 @@ export function RootNavigator() {
         name="Compose"
         component={ComposeScreen}
         options={{ title: 'New report' }}
+      />
+      <Stack.Screen
+        name="PhoneReport"
+        component={PhoneReportScreen}
+        options={{ title: 'On this phone' }}
       />
       <Stack.Screen
         name="ServerReport"

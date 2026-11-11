@@ -17,19 +17,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { fetchServerReport, fetchServerReports } from '../api/reports';
 import type { ServerReport } from '../api/types';
 import type { MainTabParamList, RootStackParamList } from '../navigation/types';
+import { formatWhen } from '../helpers/formatWhen';
+import { ReportCard } from '../components/ReportCard';
 
 type ListProps = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Server'>,
   NativeStackScreenProps<RootStackParamList>
 >;
 type DetailProps = NativeStackScreenProps<RootStackParamList, 'ServerReport'>;
-
-function photoLabel(count: number) {
-  if (count === 1) {
-    return '1 photo';
-  }
-  return `${count} photos`;
-}
 
 export function ServerScreen({ navigation }: ListProps) {
   const [reports, setReports] = useState<ServerReport[]>([]);
@@ -94,13 +89,14 @@ export function ServerScreen({ navigation }: ListProps) {
           )
         }
         renderItem={({ item }) => (
-          <Pressable
+          <ReportCard
+            title={item.description}
+            createdAt={item.completedAt ?? item.createdAt}
+            photoCount={item.images.length}
+            status="On the server."
+            tone="ok"
             onPress={() => navigation.navigate('ServerReport', { id: item.id })}
-            style={styles.row}
-          >
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.meta}>{photoLabel(item.images.length)}</Text>
-          </Pressable>
+          />
         )}
       />
     </View>
@@ -155,16 +151,21 @@ export function ServerReportScreen({ route }: DetailProps) {
   const images = [...report.images].sort(
     (left, right) => left.position - right.position,
   );
+  const when = report.completedAt ?? report.createdAt;
 
   return (
-    <ScrollView contentContainerStyle={styles.detail}>
-      <Text style={styles.description}>{report.description}</Text>
-      {images.map(image => (
-        <Image
-          key={image.id}
-          source={{ uri: image.url }}
-          style={styles.image}
-        />
+    <ScrollView style={styles.screen} contentContainerStyle={styles.detail}>
+      <Text style={styles.title}>{report.description}</Text>
+      <Text style={styles.meta}>{formatWhen(when)}</Text>
+      <Text style={styles.serverStatus}>On the server.</Text>
+      <Text style={styles.meta}>
+        {images.length === 1 ? '1 photo' : `${images.length} photos`}
+      </Text>
+      {images.map((image, index) => (
+        <View key={image.id} style={styles.photoBlock}>
+          <Image source={{ uri: image.url }} style={styles.image} />
+          <Text style={styles.caption}>Photo {index + 1}</Text>
+        </View>
       ))}
     </ScrollView>
   );
@@ -180,22 +181,28 @@ const styles = StyleSheet.create({
     gap: 12,
     flexGrow: 1,
   },
-  row: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D9D3C8',
-    padding: 16,
-    gap: 6,
-  },
-  description: {
-    fontSize: 18,
-    lineHeight: 24,
-    color: '#1C1915',
-  },
   meta: {
     fontSize: 15,
     lineHeight: 20,
+    color: '#5C564E',
+  },
+  title: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '700',
+    color: '#1C1915',
+  },
+  serverStatus: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '600',
+    color: '#2F6B4F',
+  },
+  photoBlock: {
+    gap: 8,
+  },
+  caption: {
+    fontSize: 14,
     color: '#5C564E',
   },
   empty: {
@@ -235,8 +242,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 240,
-    borderRadius: 12,
+    aspectRatio: 4 / 3,
+    borderRadius: 16,
     backgroundColor: '#E6E1D8',
   },
 });

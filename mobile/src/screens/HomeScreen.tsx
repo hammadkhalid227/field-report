@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,18 +16,13 @@ import type { MainTabParamList, RootStackParamList } from '../navigation/types';
 import { phoneStatus } from '../phone/phoneStatus';
 import { reportStore } from '../store/reportStore';
 import type { StoredReport } from '../store/types';
+import { ReportCard } from '../components/ReportCard';
+import { phoneCardProgress, phoneCardTone } from '../helpers/reportPresentation';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Phone'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-
-function photoLabel(count: number) {
-  if (count === 1) {
-    return '1 photo';
-  }
-  return `${count} photos`;
-}
 
 export function HomeScreen({ navigation }: Props) {
   const [reports, setReports] = useState<StoredReport[]>([]);
@@ -94,15 +88,22 @@ export function HomeScreen({ navigation }: Props) {
             <ActivityIndicator color="#1C1915" />
           )
         }
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.meta}>
-              {photoLabel(item.photos.length)}.{' '}
-              {phoneStatus(item, online, Date.now())}
-            </Text>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const now = Date.now();
+          return (
+            <ReportCard
+              title={item.description}
+              createdAt={item.createdAt}
+              photoCount={item.photos.length}
+              status={phoneStatus(item, online, now)}
+              tone={phoneCardTone(item, online, now)}
+              progress={phoneCardProgress(item, online, now)}
+              onPress={() =>
+                navigation.navigate('PhoneReport', { id: item.id })
+              }
+            />
+          );
+        }}
       />
       <Pressable
         onPress={() => navigation.navigate('Compose')}
@@ -123,24 +124,6 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
     flexGrow: 1,
-  },
-  row: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D9D3C8',
-    padding: 16,
-    gap: 6,
-  },
-  description: {
-    fontSize: 18,
-    lineHeight: 24,
-    color: '#1C1915',
-  },
-  meta: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: '#5C564E',
   },
   empty: {
     fontSize: 16,

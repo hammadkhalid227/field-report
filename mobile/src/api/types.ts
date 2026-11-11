@@ -11,5 +11,7 @@ export type ServerReport = {
   clientId: string;
   description: string;
   status: string;
+  createdAt: string;
+  completedAt: string | null;
   images: ServerImage[];
 };

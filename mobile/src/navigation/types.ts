@@ -7,5 +7,6 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Main: undefined;
   Compose: undefined;
+  PhoneReport: { id: string };
   ServerReport: { id: string };
 };

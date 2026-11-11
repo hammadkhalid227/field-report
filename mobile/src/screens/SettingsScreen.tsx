@@ -95,8 +95,8 @@ export function SettingsScreen() {
     >
       <Text style={styles.heading}>Server address</Text>
       <Text style={styles.help}>
-        On the emulator use http://10.0.2.2:4000. On a phone, use the
-        computer's address.
+        On the emulator use http://10.0.2.2:4000. On a phone, use the computer's
+        address.
       </Text>
       <TextInput
         value={address}
