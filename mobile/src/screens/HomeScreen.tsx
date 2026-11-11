@@ -5,32 +5,24 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  View,
 } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { MainTabParamList, RootStackParamList } from '../navigation/types';
-import { phoneStatus } from '../phone/phoneStatus';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
+import type { HomeScreenProps, StoredReport } from '../types/types';
+import { phoneStatus } from '../helpers/phoneStatus';
+import { add } from '../assets/svgs';
+import { AppIcon } from '../components/AppIcon';
 import { reportStore } from '../store/reportStore';
-import type { StoredReport } from '../store/types';
+import { ReportCard } from '../components/ReportCard';
+import {
+  phoneCardProgress,
+  phoneCardTone,
+} from '../helpers/reportPresentation';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Phone'>,
-  NativeStackScreenProps<RootStackParamList>
->;
-
-function photoLabel(count: number) {
-  if (count === 1) {
-    return '1 photo';
-  }
-  return `${count} photos`;
-}
-
-export function HomeScreen({ navigation }: Props) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const [reports, setReports] = useState<StoredReport[]>([]);
   const [ready, setReady] = useState(false);
   const [online, setOnline] = useState(true);
@@ -91,24 +83,32 @@ export function HomeScreen({ navigation }: Props) {
           ready ? (
             <Text style={styles.empty}>No reports on this phone yet.</Text>
           ) : (
-            <ActivityIndicator color="#1C1915" />
+            <ActivityIndicator color={colors.primary} />
           )
         }
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.meta}>
-              {photoLabel(item.photos.length)}.{' '}
-              {phoneStatus(item, online, Date.now())}
-            </Text>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const now = Date.now();
+          return (
+            <ReportCard
+              title={item.description}
+              createdAt={item.createdAt}
+              photoCount={item.photos.length}
+              status={phoneStatus(item, online, now)}
+              tone={phoneCardTone(item, online, now)}
+              progress={phoneCardProgress(item, online, now)}
+              onPress={() =>
+                navigation.navigate('PhoneReport', { id: item.id })
+              }
+            />
+          );
+        }}
       />
       <Pressable
         onPress={() => navigation.navigate('Compose')}
-        style={styles.primaryButton}
+        style={styles.fab}
+        accessibilityLabel="New report"
       >
-        <Text style={styles.primaryText}>New report</Text>
+        <AppIcon xml={add} size={rf(28)} color={colors.paper} />
       </Pressable>
     </SafeAreaView>
   );
@@ -117,56 +117,36 @@ export function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F7F6F3',
+    backgroundColor: colors.paper,
   },
   list: {
-    padding: 20,
-    gap: 12,
+    padding: wp(5.3),
+    gap: hp(1.5),
     flexGrow: 1,
-  },
-  row: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D9D3C8',
-    padding: 16,
-    gap: 6,
-  },
-  description: {
-    fontSize: 18,
-    lineHeight: 24,
-    color: '#1C1915',
-  },
-  meta: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: '#5C564E',
+    paddingBottom: hp(11.8),
   },
   empty: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
-    marginTop: 12,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
+    marginTop: hp(1.5),
   },
   notice: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#8C2F2F',
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.danger,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
   },
-  primaryButton: {
-    minHeight: 52,
-    borderRadius: 12,
+  fab: {
+    position: 'absolute',
+    right: wp(5.3),
+    bottom: hp(2.5),
+    width: wp(16),
+    height: wp(16),
+    borderRadius: wp(8),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1C1915',
-    marginHorizontal: 20,
-    marginBottom: 16,
-  },
-  primaryText: {
-    fontSize: 17,
-    color: '#F7F6F3',
-    fontWeight: '600',
+    backgroundColor: colors.primary,
   },
 });

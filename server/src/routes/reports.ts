@@ -64,6 +64,8 @@ function toReport(report: {
   clientId: string;
   description: string;
   status: string;
+  createdAt: Date;
+  completedAt: Date | null;
   images: {
     id: string;
     clientId: string;
@@ -77,6 +79,8 @@ function toReport(report: {
     clientId: report.clientId,
     description: report.description,
     status: report.status,
+    createdAt: report.createdAt.toISOString(),
+    completedAt: report.completedAt ? report.completedAt.toISOString() : null,
     images: report.images.map(toImage),
   };
 }

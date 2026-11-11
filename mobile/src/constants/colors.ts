@@ -1,0 +1,15 @@
+export const colors = {
+  primary: '#2F6B4F',
+  paper: '#F7F6F3',
+  white: '#FFFFFF',
+  ink: '#1C1915',
+  muted: '#5C564E',
+  placeholder: '#7A736A',
+  line: '#D9D3C8',
+  photo: '#E6E1D8',
+  danger: '#8C2F2F',
+  warn: '#8A5A12',
+  tabInactive: '#D7E5DC',
+  backdrop: 'rgba(28, 25, 21, 0.88)',
+  scrim: 'rgba(28, 25, 21, 0.45)',
+};

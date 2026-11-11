@@ -2,36 +2,29 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Image,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
-import type { CompositeScreenProps } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { fetchServerReport, fetchServerReports } from '../api/reports';
-import type { ServerReport } from '../api/types';
-import type { MainTabParamList, RootStackParamList } from '../navigation/types';
+import type {
+  ServerReport,
+  ServerReportScreenProps,
+  ServerScreenProps,
+} from '../types/types';
+import { formatWhen } from '../helpers/formatWhen';
+import { LoadingImage } from '../components/LoadingImage';
+import { ReportCard } from '../components/ReportCard';
+import { colors } from '../constants/colors';
+import { hp, rf, wp } from '../constants/dimmensions';
 
-type ListProps = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Server'>,
-  NativeStackScreenProps<RootStackParamList>
->;
-type DetailProps = NativeStackScreenProps<RootStackParamList, 'ServerReport'>;
-
-function photoLabel(count: number) {
-  if (count === 1) {
-    return '1 photo';
-  }
-  return `${count} photos`;
-}
-
-export function ServerScreen({ navigation }: ListProps) {
+export function ServerScreen({ navigation }: ServerScreenProps) {
   const [reports, setReports] = useState<ServerReport[]>([]);
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -81,12 +74,12 @@ export function ServerScreen({ navigation }: ListProps) {
               setRefreshing(true);
               load();
             }}
-            tintColor="#1C1915"
+            tintColor={colors.primary}
           />
         }
         ListEmptyComponent={
           !ready ? (
-            <ActivityIndicator color="#1C1915" />
+            <ActivityIndicator color={colors.primary} />
           ) : notice ? (
             <View />
           ) : (
@@ -94,22 +87,24 @@ export function ServerScreen({ navigation }: ListProps) {
           )
         }
         renderItem={({ item }) => (
-          <Pressable
+          <ReportCard
+            title={item.description}
+            createdAt={item.completedAt ?? item.createdAt}
+            photoCount={item.images.length}
+            status="On the server."
+            tone="ok"
             onPress={() => navigation.navigate('ServerReport', { id: item.id })}
-            style={styles.row}
-          >
-            <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.meta}>{photoLabel(item.images.length)}</Text>
-          </Pressable>
+          />
         )}
       />
     </View>
   );
 }
 
-export function ServerReportScreen({ route }: DetailProps) {
+export function ServerReportScreen({ route }: ServerReportScreenProps) {
   const [report, setReport] = useState<ServerReport | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -147,7 +142,7 @@ export function ServerReportScreen({ route }: DetailProps) {
   if (!report) {
     return (
       <View style={styles.screen}>
-        <ActivityIndicator color="#1C1915" />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -155,17 +150,54 @@ export function ServerReportScreen({ route }: DetailProps) {
   const images = [...report.images].sort(
     (left, right) => left.position - right.position,
   );
+  const when = report.completedAt ?? report.createdAt;
 
   return (
-    <ScrollView contentContainerStyle={styles.detail}>
-      <Text style={styles.description}>{report.description}</Text>
-      {images.map(image => (
-        <Image
-          key={image.id}
-          source={{ uri: image.url }}
-          style={styles.image}
-        />
-      ))}
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        value={report.description}
+        editable={false}
+        multiline
+        style={styles.field}
+      />
+      <Text style={styles.label}>Created at</Text>
+      <TextInput value={formatWhen(when)} editable={false} style={styles.field} />
+      <Text style={styles.label}>Source</Text>
+      <TextInput
+        value="On the server."
+        editable={false}
+        multiline
+        style={styles.field}
+      />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.photoRow}
+      >
+        {images.map((image, index) => (
+          <Pressable key={image.id} onPress={() => setOpenPhoto(image.url)}>
+            <LoadingImage uri={image.url} style={styles.thumb} />
+            <Text style={styles.caption}>Photo {index + 1}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <Modal
+        visible={openPhoto !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenPhoto(null)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
+          {openPhoto ? (
+            <LoadingImage
+              uri={openPhoto}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          ) : null}
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -173,70 +205,91 @@ export function ServerReportScreen({ route }: DetailProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F7F6F3',
+    backgroundColor: colors.paper,
   },
   list: {
-    padding: 20,
-    gap: 12,
+    padding: wp(5.3),
+    gap: hp(1.5),
     flexGrow: 1,
   },
-  row: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D9D3C8',
-    padding: 16,
-    gap: 6,
-  },
-  description: {
-    fontSize: 18,
-    lineHeight: 24,
-    color: '#1C1915',
-  },
-  meta: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: '#5C564E',
+  caption: {
+    marginTop: hp(0.7),
+    fontSize: rf(13),
+    color: colors.muted,
   },
   empty: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#5C564E',
-    marginTop: 12,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.muted,
+    marginTop: hp(1.5),
   },
   noticeBox: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    gap: 12,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
+    gap: hp(1.5),
   },
   notice: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#1C1915',
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.ink,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(2),
   },
   secondaryButton: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#1C1915',
+    minHeight: hp(5.9),
+    borderRadius: wp(3.2),
+    borderWidth: wp(0.3),
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
   },
   secondaryText: {
-    fontSize: 17,
-    color: '#1C1915',
+    fontSize: rf(17),
+    color: colors.primary,
   },
-  detail: {
-    padding: 20,
-    gap: 16,
+  content: {
+    padding: wp(5.3),
+    gap: hp(1.5),
   },
-  image: {
-    width: '100%',
-    height: 240,
-    borderRadius: 12,
-    backgroundColor: '#E6E1D8',
+  label: {
+    fontSize: rf(14),
+    lineHeight: rf(18),
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  field: {
+    minHeight: hp(5.9),
+    borderWidth: wp(0.3),
+    borderColor: colors.primary,
+    borderRadius: wp(3.2),
+    paddingHorizontal: wp(3.7),
+    paddingVertical: hp(1.5),
+    fontSize: rf(16),
+    lineHeight: rf(22),
+    color: colors.ink,
+    backgroundColor: colors.white,
+  },
+  photoRow: {
+    gap: wp(3.2),
+    paddingVertical: hp(0.5),
+  },
+  thumb: {
+    width: wp(25.6),
+    height: wp(25.6),
+    borderRadius: wp(3.2),
+    backgroundColor: colors.photo,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: colors.backdrop,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: wp(5.3),
+  },
+  fullImage: {
+    alignSelf: 'stretch',
+    height: hp(70),
+    borderRadius: wp(4.3),
   },
 });
