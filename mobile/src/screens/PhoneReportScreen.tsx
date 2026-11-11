@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,7 +29,7 @@ function displayUri(path: string) {
 
 const toneColor = {
   neutral: '#5C564E',
-  progress: '#2E6B9A',
+  progress: '#2F6B4F',
   ok: '#2F6B4F',
   warn: '#8A5A12',
   danger: '#8C2F2F',
@@ -31,6 +39,7 @@ export function PhoneReportScreen({ route }: Props) {
   const [report, setReport] = useState<StoredReport | null>(null);
   const [missing, setMissing] = useState(false);
   const [online, setOnline] = useState(true);
+  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     return NetInfo.addEventListener(state => {
@@ -86,15 +95,33 @@ export function PhoneReportScreen({ route }: Props) {
       <Text style={[styles.status, { color: toneColor[tone] }]}>
         {phoneStatus(report, online, now)}
       </Text>
-      {photos.map((photo, index) => (
-        <View key={photo.id} style={styles.photoBlock}>
-          <Image
-            source={{ uri: displayUri(photo.localPath) }}
-            style={styles.image}
-          />
-          <Text style={styles.caption}>Photo {index + 1}</Text>
-        </View>
-      ))}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.photoRow}
+      >
+        {photos.map((item, index) => {
+          const uri = displayUri(item.localPath);
+          return (
+            <Pressable key={item.id} onPress={() => setOpenPhoto(uri)}>
+              <Image source={{ uri }} style={styles.thumb} />
+              <Text style={styles.caption}>Photo {index + 1}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+      <Modal
+        visible={openPhoto !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenPhoto(null)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
+          {openPhoto ? (
+            <Image source={{ uri: openPhoto }} style={styles.fullImage} />
+          ) : null}
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -124,18 +151,32 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontWeight: '600',
   },
-  photoBlock: {
-    gap: 8,
+  photoRow: {
+    gap: 12,
+    paddingVertical: 4,
   },
-  image: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: 16,
+  thumb: {
+    width: 96,
+    height: 96,
+    borderRadius: 12,
     backgroundColor: '#E6E1D8',
   },
   caption: {
-    fontSize: 14,
+    marginTop: 6,
+    fontSize: 13,
     color: '#5C564E',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(28, 25, 21, 0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  fullImage: {
+    width: '100%',
+    height: '70%',
+    borderRadius: 16,
   },
   notice: {
     fontSize: 16,

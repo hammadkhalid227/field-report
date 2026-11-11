@@ -237,7 +237,7 @@ export function ComposeScreen({ navigation }: Props) {
                   <Image source={{ uri: photo.uri }} style={styles.photo} />
                 ) : (
                   <View style={styles.preparing}>
-                    <ActivityIndicator color="#1C1915" />
+                    <ActivityIndicator color="#2F6B4F" />
                     <Text style={styles.preparingText}>Preparing…</Text>
                   </View>
                 )}
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#1C1915',
+    borderColor: '#2F6B4F',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
@@ -364,14 +364,14 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     fontSize: 17,
-    color: '#1C1915',
+    color: '#2F6B4F',
   },
   primaryButton: {
     minHeight: 52,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1C1915',
+    backgroundColor: '#2F6B4F',
     marginTop: 8,
   },
   primaryText: {

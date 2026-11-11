@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -76,12 +77,12 @@ export function ServerScreen({ navigation }: ListProps) {
               setRefreshing(true);
               load();
             }}
-            tintColor="#1C1915"
+            tintColor="#2F6B4F"
           />
         }
         ListEmptyComponent={
           !ready ? (
-            <ActivityIndicator color="#1C1915" />
+            <ActivityIndicator color="#2F6B4F" />
           ) : notice ? (
             <View />
           ) : (
@@ -106,6 +107,7 @@ export function ServerScreen({ navigation }: ListProps) {
 export function ServerReportScreen({ route }: DetailProps) {
   const [report, setReport] = useState<ServerReport | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [openPhoto, setOpenPhoto] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,7 +145,7 @@ export function ServerReportScreen({ route }: DetailProps) {
   if (!report) {
     return (
       <View style={styles.screen}>
-        <ActivityIndicator color="#1C1915" />
+        <ActivityIndicator color="#2F6B4F" />
       </View>
     );
   }
@@ -161,12 +163,30 @@ export function ServerReportScreen({ route }: DetailProps) {
       <Text style={styles.meta}>
         {images.length === 1 ? '1 photo' : `${images.length} photos`}
       </Text>
-      {images.map((image, index) => (
-        <View key={image.id} style={styles.photoBlock}>
-          <Image source={{ uri: image.url }} style={styles.image} />
-          <Text style={styles.caption}>Photo {index + 1}</Text>
-        </View>
-      ))}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.photoRow}
+      >
+        {images.map((image, index) => (
+          <Pressable key={image.id} onPress={() => setOpenPhoto(image.url)}>
+            <Image source={{ uri: image.url }} style={styles.thumb} />
+            <Text style={styles.caption}>Photo {index + 1}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <Modal
+        visible={openPhoto !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOpenPhoto(null)}
+      >
+        <Pressable style={styles.backdrop} onPress={() => setOpenPhoto(null)}>
+          {openPhoto ? (
+            <Image source={{ uri: openPhoto }} style={styles.fullImage} />
+          ) : null}
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -198,9 +218,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2F6B4F',
   },
-  photoBlock: {
-    gap: 8,
-  },
   caption: {
     fontSize: 14,
     color: '#5C564E',
@@ -227,23 +244,39 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#1C1915',
+    borderColor: '#2F6B4F',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
   secondaryText: {
     fontSize: 17,
-    color: '#1C1915',
+    color: '#2F6B4F',
   },
   detail: {
     padding: 20,
     gap: 16,
   },
-  image: {
-    width: '100%',
-    aspectRatio: 4 / 3,
-    borderRadius: 16,
+  photoRow: {
+    gap: 12,
+    paddingVertical: 4,
+  },
+  thumb: {
+    width: 96,
+    height: 96,
+    borderRadius: 12,
     backgroundColor: '#E6E1D8',
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(28, 25, 21, 0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  fullImage: {
+    width: '100%',
+    height: '70%',
+    borderRadius: 16,
   },
 });

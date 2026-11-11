@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LoaderKitProgress } from 'react-native-loader-kit';
+import { clock, photo } from '../assets/svgs';
+import { AppIcon } from './AppIcon';
 import { formatWhen } from '../helpers/formatWhen';
 
 type Tone = 'neutral' | 'progress' | 'ok' | 'warn' | 'danger';
@@ -16,7 +18,7 @@ type Props = {
 
 const toneColor: Record<Tone, string> = {
   neutral: '#5C564E',
-  progress: '#2E6B9A',
+  progress: '#2F6B4F',
   ok: '#2F6B4F',
   warn: '#8A5A12',
   danger: '#8C2F2F',
@@ -51,11 +53,11 @@ export function ReportCard({
       </Text>
       <View style={styles.metaRow}>
         <View style={styles.metaItem}>
-          <ClockMark color={color} />
+          <AppIcon xml={clock} size={16} color={color} />
           <Text style={styles.meta}>{when}</Text>
         </View>
         <View style={styles.metaItem}>
-          <PhotoMark color={color} />
+          <AppIcon xml={photo} size={16} color={color} />
           <Text style={styles.meta}>{photoLabel(photoCount)}</Text>
         </View>
       </View>
@@ -66,7 +68,7 @@ export function ReportCard({
       {progress !== undefined ? (
         <LoaderKitProgress
           type="linear"
-         variant={'shimmer'}
+          variant={'shimmer'}
           value={progress}
           color="#2F6B4F"
           trackColor="#E6E1D8"
@@ -74,22 +76,6 @@ export function ReportCard({
         />
       ) : null}
     </Pressable>
-  );
-}
-
-function ClockMark({ color }: { color: string }) {
-  return (
-    <View style={[styles.clock, { borderColor: color }]}>
-      <View style={[styles.clockHand, { backgroundColor: color }]} />
-    </View>
-  );
-}
-
-function PhotoMark({ color }: { color: string }) {
-  return (
-    <View style={[styles.frame, { borderColor: color }]}>
-      <View style={[styles.frameDot, { backgroundColor: color }]} />
-    </View>
   );
 }
 
@@ -148,31 +134,5 @@ const styles = StyleSheet.create({
   progress: {
     height: 8,
     width: '100%',
-  },
-  clock: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1.5,
-    alignItems: 'center',
-  },
-  clockHand: {
-    width: 1.5,
-    height: 5,
-    marginTop: 2,
-  },
-  frame: {
-    width: 14,
-    height: 12,
-    borderRadius: 2,
-    borderWidth: 1.5,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    padding: 1,
-  },
-  frameDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
   },
 });

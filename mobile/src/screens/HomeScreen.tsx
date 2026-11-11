@@ -14,10 +14,15 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { MainTabParamList, RootStackParamList } from '../navigation/types';
 import { phoneStatus } from '../phone/phoneStatus';
+import { add } from '../assets/svgs';
+import { AppIcon } from '../components/AppIcon';
 import { reportStore } from '../store/reportStore';
 import type { StoredReport } from '../store/types';
 import { ReportCard } from '../components/ReportCard';
-import { phoneCardProgress, phoneCardTone } from '../helpers/reportPresentation';
+import {
+  phoneCardProgress,
+  phoneCardTone,
+} from '../helpers/reportPresentation';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Phone'>,
@@ -85,7 +90,7 @@ export function HomeScreen({ navigation }: Props) {
           ready ? (
             <Text style={styles.empty}>No reports on this phone yet.</Text>
           ) : (
-            <ActivityIndicator color="#1C1915" />
+            <ActivityIndicator color="#2F6B4F" />
           )
         }
         renderItem={({ item }) => {
@@ -107,9 +112,10 @@ export function HomeScreen({ navigation }: Props) {
       />
       <Pressable
         onPress={() => navigation.navigate('Compose')}
-        style={styles.primaryButton}
+        style={styles.fab}
+        accessibilityLabel="New report"
       >
-        <Text style={styles.primaryText}>New report</Text>
+        <AppIcon xml={add} size={28} color="#F7F6F3" />
       </Pressable>
     </SafeAreaView>
   );
@@ -124,6 +130,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 12,
     flexGrow: 1,
+    paddingBottom: 96,
   },
   empty: {
     fontSize: 16,
@@ -138,18 +145,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
   },
-  primaryButton: {
-    minHeight: 52,
-    borderRadius: 12,
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1C1915',
-    marginHorizontal: 20,
-    marginBottom: 16,
-  },
-  primaryText: {
-    fontSize: 17,
-    color: '#F7F6F3',
-    fontWeight: '600',
+    backgroundColor: '#2F6B4F',
   },
 });
